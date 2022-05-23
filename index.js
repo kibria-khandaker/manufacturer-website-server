@@ -15,6 +15,21 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.lytri.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+        return res.status(401).send({ message: 'UnAuthHeader access' });
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden access' })
+        }
+        // console.log(decoded)
+        req.decoded = decoded;
+        next()
+    });
+}
 
 async function run() {
     try {
@@ -54,16 +69,26 @@ async function run() {
         })
 
         //  GET booking product from MDB
-        // http://localhost:5000/booking?patient=kibriakhandaker66@gmail.com
-        app.get('/booking', async (req, res) => {
-            const bookUserEmail = req.query.bookUserEmail;
-            
-            const authorization = req.headers.authorization;
-            console.log('Auth Header', authorization);
+        // http://localhost:5000/booking?bookUserEmail=kibriakhandaker66@gmail.com
 
-            const query = { bookUserEmail: bookUserEmail }
-            const userBookings = await bookingCollection.find(query).toArray()
-            res.send(userBookings)
+        app.get('/booking', verifyJWT, async (req, res) => {
+            const bookUserEmail = req.query.bookUserEmail;
+
+            // const authorization = req.headers.authorization;
+            // console.log('Auth Header', authorization);
+            // const query = { bookUserEmail: bookUserEmail }
+            // const userBookings = await bookingCollection.find(query).toArray()
+            // res.send(userBookings)
+
+            const decodedEmail = req.decoded.email;
+            if (bookUserEmail === decodedEmail) {
+                const query = { bookUserEmail: bookUserEmail }
+                const bookings = await bookingCollection.find(query).toArray()
+                res.send(bookings)
+            } else {
+                return res.status(403).send({ message: 'Forbidden access the link' })
+            }
+
         })
 
         // booking post or sent data to MDB 
@@ -81,6 +106,20 @@ async function run() {
             return res.send({ success: true, myBooking });
         })
 
+        // // Data add in Database MDB
+        // app.post('/tools',  async (req, res) => {
+        //     const task = req.body;
+        //     const result = await toolsCollection.insertOne(task)
+        //     res.send(result);
+        // })
+
+        // // DELETE items from database & UI
+        // app.delete('/tools/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: ObjectId(id) };
+        //     const result = await toolsCollection.deleteOne(query);
+        //     res.send(result);
+        // })
 
         //--------
     } finally { }
