@@ -45,7 +45,31 @@ async function run() {
             res.send(myTools)
         })
 
-        // input use data in MDB 
+        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+            
+            const email = req.params.email;
+            const requester = req.decoded.email;
+            const requesterAccount = await userCollection.findOne({ email: requester })
+            if (requesterAccount.role === 'admin') {
+            const filter = { email: email };
+            const updateDoc = {
+                $set: { role: 'admin' },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
+            } else {
+              res.status(403).send({ message: 'Forbidden to access' })
+            }
+
+        })
+
+        // Get use's Information from in MDB
+        app.get('/user', verifyJWT, async (req, res) => {
+            const users = await userCollection.find().toArray();
+            res.send(users)
+        })
+
+        // input use's Information data in MDB 
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -70,16 +94,8 @@ async function run() {
 
         //  GET booking product from MDB
         // http://localhost:5000/booking?bookUserEmail=kibriakhandaker66@gmail.com
-
         app.get('/booking', verifyJWT, async (req, res) => {
             const bookUserEmail = req.query.bookUserEmail;
-
-            // const authorization = req.headers.authorization;
-            // console.log('Auth Header', authorization);
-            // const query = { bookUserEmail: bookUserEmail }
-            // const userBookings = await bookingCollection.find(query).toArray()
-            // res.send(userBookings)
-
             const decodedEmail = req.decoded.email;
             if (bookUserEmail === decodedEmail) {
                 const query = { bookUserEmail: bookUserEmail }
