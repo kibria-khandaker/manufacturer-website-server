@@ -15,13 +15,14 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.lytri.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+
 async function run() {
     try {
         //--------
         await client.connect();
         const toolsCollection = client.db("toolsData").collection("tools");
         const bookingCollection = client.db("toolsData").collection("bookings");
- 
+        const userCollection = client.db("toolsData").collection("users");
 
         // Get Data From MDB
         app.get('/tools', async (req, res) => {
@@ -29,8 +30,28 @@ async function run() {
             res.send(myTools)
         })
 
- 
+        // input use data in MDB 
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            // res.send(result);
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET)
+            res.send({ result, token });
+        })
 
+        // Get Single single Data
+        app.get('/tools/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const toolsID = await toolsCollection.findOne(query);
+            res.send(toolsID)
+        })
 
         //  GET booking product from MDB
         // http://localhost:5000/booking?patient=kibriakhandaker66@gmail.com
@@ -61,6 +82,7 @@ async function run() {
         })
 
 
+        //--------
     } finally { }
 }
 run().catch(console.dir)
