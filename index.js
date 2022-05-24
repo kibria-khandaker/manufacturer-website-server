@@ -38,6 +38,7 @@ async function run() {
         const toolsCollection = client.db("toolsData").collection("tools");
         const bookingCollection = client.db("toolsData").collection("bookings");
         const userCollection = client.db("toolsData").collection("users");
+        const profileCollection = client.db("toolsData").collection("userProfiles");
 
         // Get Data From MDB
         app.get('/tools', async (req, res) => {
@@ -45,6 +46,61 @@ async function run() {
             res.send(myTools)
         })
 
+        // Get Single Profile Info ----------------------
+        app.get('/portfolio/:email', async (req, res) => {
+            const email = req.params.email;
+            if (email) {
+                const myProfile = await profileCollection.findOne({ email: email });
+                return res.send({ success: true, myProfile })
+            }else{
+                return res.send({ success: false, myProfile });
+            }
+        })
+
+        // Get Data From MDB
+        app.get('/profile', async (req, res) => {
+            const profile = await profileCollection.find({}).toArray();
+            res.send(profile)
+        })
+
+        // Add/send Profile info in MDB-----------
+        app.post('/profile', async (req, res) => {
+            const profile = req.body;
+            const query = {
+                email: profile.email
+            };
+            const exists = await profileCollection.findOne(query);
+            if (exists) {
+                return res.send({ success: false, profile: exists })
+            }
+            const myProfile = await profileCollection.insertOne(profile);
+            return res.send({ success: true, myProfile });
+        })
+
+        // Update Profile info in MDB----------
+        app.put('/profile/:email', async (req, res) => {
+            const email = req.params.email;
+            const profile = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    education: profile.education,
+                    phone: profile.phone,
+                    linkedinLink: profile.linkedinLink,
+                    locationCity: profile.locationCity,
+                    locationDistrict: profile.locationDistrict,
+                    country: profile.country,
+                    shortDesc: profile.shortDesc,
+                },
+            };
+            const result = await profileCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+            // const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET)
+            // res.send({ result, token });
+        })
+
+        // Get data is admin role --- check from MDB
         app.get('/admin/:email', async (req, res) => {
             const email = req.params.email;
             const user = await userCollection.findOne({ email: email });
@@ -52,6 +108,7 @@ async function run() {
             res.send({ admin: isAdmin })
         })
 
+        // A old Admin Make/set a admin-role to new user And --- the info send in MDB
         app.put('/user/admin/:email', verifyJWT, async (req, res) => {
 
             const email = req.params.email;
@@ -76,7 +133,7 @@ async function run() {
             res.send(users)
         })
 
-        // input use's Information data in MDB 
+        // send use's Information data in MDB 
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -147,3 +204,6 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log('The -Construction Tools Manufacturer- Server Listening to port', port);
 })
+
+
+// // http://localhost:5000/API?email=kibriakhandaker66@gmail.com
