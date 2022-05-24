@@ -45,6 +45,8 @@ async function run() {
             res.send(myTools)
         })
 
+
+
         app.get('/admin/:email', async (req, res) => {
             const email = req.params.email;
             const user = await userCollection.findOne({ email: email });
@@ -99,6 +101,17 @@ async function run() {
             res.send(toolsID)
         })
 
+        // Post tools in Database MDB ,
+        app.post('/tools', async (req, res) => {
+            const task = req.body;
+            const result = await toolsCollection.insertOne(task)
+            res.send(result);
+        })
+
+
+
+
+
         //  GET booking product from MDB
         // http://localhost:5000/booking?bookUserEmail=kibriakhandaker66@gmail.com
         app.get('/booking', verifyJWT, async (req, res) => {
@@ -129,12 +142,6 @@ async function run() {
             return res.send({ success: true, myBooking });
         })
 
-        // // Data add in Database MDB
-        // app.post('/tools',  async (req, res) => {
-        //     const task = req.body;
-        //     const result = await toolsCollection.insertOne(task)
-        //     res.send(result);
-        // })
 
         // // DELETE items from database & UI
         // app.delete('/tools/:id', async (req, res) => {
