@@ -45,8 +45,6 @@ async function run() {
             res.send(myTools)
         })
 
-
-
         app.get('/admin/:email', async (req, res) => {
             const email = req.params.email;
             const user = await userCollection.findOne({ email: email });
@@ -108,12 +106,7 @@ async function run() {
             res.send(result);
         })
 
-
-
-
-
         //  GET booking product from MDB
-        // http://localhost:5000/booking?bookUserEmail=kibriakhandaker66@gmail.com
         app.get('/booking', verifyJWT, async (req, res) => {
             const bookUserEmail = req.query.bookUserEmail;
             const decodedEmail = req.decoded.email;
@@ -124,7 +117,6 @@ async function run() {
             } else {
                 return res.status(403).send({ message: 'Forbidden access the link' })
             }
-
         })
 
         // booking post or sent data to MDB 
@@ -141,15 +133,6 @@ async function run() {
             const myBooking = await bookingCollection.insertOne(booking);
             return res.send({ success: true, myBooking });
         })
-
-
-        // // DELETE items from database & UI
-        // app.delete('/tools/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) };
-        //     const result = await toolsCollection.deleteOne(query);
-        //     res.send(result);
-        // })
 
         //--------
     } finally { }
