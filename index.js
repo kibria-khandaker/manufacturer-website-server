@@ -41,11 +41,42 @@ async function run() {
         const profileCollection = client.db("toolsData").collection("userProfiles");
         const reviewCollection = client.db("toolsData").collection("reviews");
 
-        // Get Data From MDB
+        // For Admin verify like JTW
+        const verifyAdmin = async (req, res, next) => {
+            const requester = req.decoded.email;
+            const requesterAccount = await userCollection.findOne({ email: requester })
+            if (requesterAccount.role === 'admin') {
+                next();
+            } else {
+                res.status(403).send({ message: 'Forbidden to access' })
+            }
+        }
+
+
+
+        // Get Data From MDB ---+++ if i add verifyJWT, verifyAdmin, home page not loading.
         app.get('/tools', async (req, res) => {
             const myTools = await toolsCollection.find({}).toArray();
             res.send(myTools)
         })
+
+        // Get Data From MDB ---+++++++++++++++++++
+        app.get('/tools/manage', verifyJWT, verifyAdmin, async (req, res) => {
+            const myTools = await toolsCollection.find({}).toArray();
+            res.send(myTools)
+        })
+
+        // Delete tools/product Data From MDB ---+++++++++++++++++++
+        app.delete('/tools/manage/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await toolsCollection.deleteOne(query);
+            res.send(result);
+        })
+
+
+
+
 
         // Get Single Profile Info ----------------------
         app.get('/portfolio/:email', async (req, res) => {
@@ -78,29 +109,6 @@ async function run() {
             return res.send({ success: true, myProfile });
         })
 
-        // // Update Profile info in MDB----------
-        // app.put('/profile/:email', async (req, res) => {
-        //     const email = req.params.email;
-        //     const profile = req.body;
-        //     const filter = { email: email };
-        //     const options = { upsert: true };
-        //     const updateDoc = {
-        //         $set: {
-        //             education: profile.education,
-        //             phone: profile.phone,
-        //             linkedinLink: profile.linkedinLink,
-        //             locationCity: profile.locationCity,
-        //             locationDistrict: profile.locationDistrict,
-        //             country: profile.country,
-        //             shortDesc: profile.shortDesc,
-        //         },
-        //     };
-        //     const result = await profileCollection.updateOne(filter, updateDoc, options);
-        //     res.send(result);
-        //     // const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET)
-        //     // res.send({ result, token });
-        // })
-
         // Get data is admin role --- check from MDB
         app.get('/admin/:email', async (req, res) => {
             const email = req.params.email;
@@ -110,22 +118,14 @@ async function run() {
         })
 
         // A old Admin Make/set a admin-role to new user And --- the info send in MDB
-        app.put('/user/admin/:email', verifyJWT, async (req, res) => {
-
+        app.put('/user/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
-            const requester = req.decoded.email;
-            const requesterAccount = await userCollection.findOne({ email: requester })
-            if (requesterAccount.role === 'admin') {
-                const filter = { email: email };
-                const updateDoc = {
-                    $set: { role: 'admin' },
-                };
-                const result = await userCollection.updateOne(filter, updateDoc);
-                res.send(result);
-            } else {
-                res.status(403).send({ message: 'Forbidden to access' })
-            }
-
+            const filter = { email: email };
+            const updateDoc = {
+                $set: { role: 'admin' },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc);
+            res.send(result);
         })
 
         // Get use's Information from in MDB
@@ -157,8 +157,9 @@ async function run() {
             res.send(toolsID)
         })
 
-        // Post tools in Database MDB , -- verifyJWT added --
-        app.post('/tools',  async (req, res) => {
+
+        // Post tools in Database MDB , -- verifyJWT added --------------
+        app.post('/tools', verifyJWT, verifyAdmin, async (req, res) => {
             const task = req.body;
             const result = await toolsCollection.insertOne(task)
             res.send(result);
@@ -232,5 +233,3 @@ app.listen(port, () => {
     console.log('The -Construction Tools Manufacturer- Server Listening to port', port);
 })
 
-
-// // http://localhost:5000/API?email=kibriakhandaker66@gmail.com
