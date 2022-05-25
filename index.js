@@ -39,6 +39,7 @@ async function run() {
         const bookingCollection = client.db("toolsData").collection("bookings");
         const userCollection = client.db("toolsData").collection("users");
         const profileCollection = client.db("toolsData").collection("userProfiles");
+        const reviewCollection = client.db("toolsData").collection("reviews");
 
         // Get Data From MDB
         app.get('/tools', async (req, res) => {
@@ -52,7 +53,7 @@ async function run() {
             if (email) {
                 const myProfile = await profileCollection.findOne({ email: email });
                 return res.send({ success: true, myProfile })
-            }else{
+            } else {
                 return res.send({ success: false, myProfile });
             }
         })
@@ -77,28 +78,28 @@ async function run() {
             return res.send({ success: true, myProfile });
         })
 
-        // Update Profile info in MDB----------
-        app.put('/profile/:email', async (req, res) => {
-            const email = req.params.email;
-            const profile = req.body;
-            const filter = { email: email };
-            const options = { upsert: true };
-            const updateDoc = {
-                $set: {
-                    education: profile.education,
-                    phone: profile.phone,
-                    linkedinLink: profile.linkedinLink,
-                    locationCity: profile.locationCity,
-                    locationDistrict: profile.locationDistrict,
-                    country: profile.country,
-                    shortDesc: profile.shortDesc,
-                },
-            };
-            const result = await profileCollection.updateOne(filter, updateDoc, options);
-            res.send(result);
-            // const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET)
-            // res.send({ result, token });
-        })
+        // // Update Profile info in MDB----------
+        // app.put('/profile/:email', async (req, res) => {
+        //     const email = req.params.email;
+        //     const profile = req.body;
+        //     const filter = { email: email };
+        //     const options = { upsert: true };
+        //     const updateDoc = {
+        //         $set: {
+        //             education: profile.education,
+        //             phone: profile.phone,
+        //             linkedinLink: profile.linkedinLink,
+        //             locationCity: profile.locationCity,
+        //             locationDistrict: profile.locationDistrict,
+        //             country: profile.country,
+        //             shortDesc: profile.shortDesc,
+        //         },
+        //     };
+        //     const result = await profileCollection.updateOne(filter, updateDoc, options);
+        //     res.send(result);
+        //     // const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET)
+        //     // res.send({ result, token });
+        // })
 
         // Get data is admin role --- check from MDB
         app.get('/admin/:email', async (req, res) => {
@@ -156,8 +157,8 @@ async function run() {
             res.send(toolsID)
         })
 
-        // Post tools in Database MDB ,
-        app.post('/tools', async (req, res) => {
+        // Post tools in Database MDB , -- verifyJWT added --
+        app.post('/tools',  async (req, res) => {
             const task = req.body;
             const result = await toolsCollection.insertOne(task)
             res.send(result);
@@ -190,6 +191,32 @@ async function run() {
             const myBooking = await bookingCollection.insertOne(booking);
             return res.send({ success: true, myBooking });
         })
+
+
+
+        // Review API ---
+        app.get('/review', async (req, res) => {
+            const review = await reviewCollection.find().toArray();
+            res.send(review)
+        })
+
+
+        app.post('/review', async (req, res) => {
+
+            const review = req.body;
+            const query = {
+                email: review.email
+            };
+            const exists = await reviewCollection.findOne(query);
+            if (exists) {
+                return res.send({ success: false, review: exists })
+            }
+            const myReview = await reviewCollection.insertOne(review)
+            return res.send({ success: true, myReview });
+
+        })
+
+
 
         //--------
     } finally { }
