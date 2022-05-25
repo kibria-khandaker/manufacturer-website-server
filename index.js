@@ -5,6 +5,9 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
+// payment related ----+++
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 const port = process.env.PORT || 5000;
 const app = express();
 
@@ -40,6 +43,7 @@ async function run() {
         const userCollection = client.db("toolsData").collection("users");
         const profileCollection = client.db("toolsData").collection("userProfiles");
         const reviewCollection = client.db("toolsData").collection("reviews");
+        const paymentCollection = client.db("toolsData").collection("payments");
 
         // For Admin verify like JTW
         const verifyAdmin = async (req, res, next) => {
@@ -52,6 +56,19 @@ async function run() {
             }
         }
 
+        // payment stripe function --------------+++++
+        app.post("/create-payment-intent", verifyJWT, async (req, res) => {
+            const product = req.body;
+            const price = product.bookPrice;
+            const amount = price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: "usd",
+                payment_method_types: ['card']
+            });
+            res.send({ clientSecret: paymentIntent.client_secret, });
+        });
+        // payment stripe function ++++++++++++++++
 
 
         // Get Data From MDB ---+++ if i add verifyJWT, verifyAdmin, home page not loading.
@@ -170,6 +187,39 @@ async function run() {
             const manageBooking = await bookingCollection.find({}).toArray();
             res.send(manageBooking)
         })
+
+        // for payment er kajer jonno ++++++++++
+        app.get('/booking/payment/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const manageBooking = await bookingCollection.findOne(query);
+            res.send(manageBooking)
+        })
+
+        // payment stripe transactionId send in MDB function ++++++++----------------
+        app.patch('/booking/payment/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    paid:true,
+                    transactionId:payment.transactionId                    
+                },
+            };
+            const result = await paymentCollection.insertOne(payment);
+            const paymentBooking = await bookingCollection.updateOne(filter,updateDoc);
+            res.send(updateDoc)
+        })
+
+
+
+
+
+
+
+
+
 
         // Delete tools/product Data From MDB ---+++++++++++++++++++
         app.delete('/booking/manage/:id', verifyJWT, verifyAdmin, async (req, res) => {
