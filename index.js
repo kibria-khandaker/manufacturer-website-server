@@ -75,9 +75,6 @@ async function run() {
         })
 
 
-
-
-
         // Get Single Profile Info ----------------------
         app.get('/portfolio/:email', async (req, res) => {
             const email = req.params.email;
@@ -165,6 +162,25 @@ async function run() {
             res.send(result);
         })
 
+
+
+        // manage Booking -----------++++
+        // Get Data From MDB ---+++++++++++++++++++
+        app.get('/booking/manage', verifyJWT, verifyAdmin, async (req, res) => {
+            const manageBooking = await bookingCollection.find({}).toArray();
+            res.send(manageBooking)
+        })
+
+        // Delete tools/product Data From MDB ---+++++++++++++++++++
+        app.delete('/booking/manage/:id', verifyJWT, verifyAdmin, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const manageBooking = await bookingCollection.deleteOne(query);
+            res.send(manageBooking);
+        })
+        // manage Booking ++++-----------
+
+
         //  GET booking product from MDB
         app.get('/booking', verifyJWT, async (req, res) => {
             const bookUserEmail = req.query.bookUserEmail;
@@ -218,7 +234,6 @@ async function run() {
         })
 
 
-
         //--------
     } finally { }
 }
@@ -233,3 +248,4 @@ app.listen(port, () => {
     console.log('The -Construction Tools Manufacturer- Server Listening to port', port);
 })
 
+//------
