@@ -196,6 +196,7 @@ async function run() {
             res.send(manageBooking)
         })
 
+
         // payment stripe transactionId send in MDB function ++++++++----------------
         app.patch('/booking/payment/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
@@ -203,22 +204,14 @@ async function run() {
             const filter = { _id: ObjectId(id) };
             const updateDoc = {
                 $set: {
-                    paid:true,
-                    transactionId:payment.transactionId                    
+                    paid: true,
+                    transactionId: payment.transactionId
                 },
             };
             const result = await paymentCollection.insertOne(payment);
-            const paymentBooking = await bookingCollection.updateOne(filter,updateDoc);
+            const paymentBooking = await bookingCollection.updateOne(filter, updateDoc);
             res.send(updateDoc)
         })
-
-
-
-
-
-
-
-
 
 
         // Delete tools/product Data From MDB ---+++++++++++++++++++
@@ -249,7 +242,7 @@ async function run() {
             const booking = req.body;
             const query = {
                 bookToolsId: booking.bookToolsId,
-                bookUserEmail: booking.bookUserEmail
+                bookUserEmail: booking.bookUserEmail,
             };
             const exists = await bookingCollection.findOne(query);
             if (exists) {
@@ -259,6 +252,14 @@ async function run() {
             return res.send({ success: true, myBooking });
         })
 
+        // Normal user Deletenpm run start-dev personal order   ------+++++++++++
+        app.delete('/booking/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await bookingCollection.deleteOne(query);
+            res.send(result);
+        })
+        //--------
 
 
         // Review API ---
