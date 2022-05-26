@@ -2,15 +2,7 @@
 
 <br />
 
-### My project Live link, And click [Here](https://construction-tools-36dcf.web.app/) to view it in your browser.
-
-<br/> 
-<br/> 
-
-For Examiner test my project ( it's For Client Site )
-
-- User: phero@phero.com
-- pass: 123456
+### My Client site Details for Examiner test [(Admin: User/pass) Check Client Repo](https://github.com/programming-hero-web-course1/manufacturer-website-client-side-kibria-khandaker/)
 
 
 <br/> 
