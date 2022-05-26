@@ -70,7 +70,6 @@ async function run() {
         });
         // payment stripe function ++++++++++++++++
 
-
         // Get Data From MDB ---+++ if i add verifyJWT, verifyAdmin, home page not loading.
         app.get('/tools', async (req, res) => {
             const myTools = await toolsCollection.find({}).toArray();
@@ -90,7 +89,6 @@ async function run() {
             const result = await toolsCollection.deleteOne(query);
             res.send(result);
         })
-
 
         // Get Single Profile Info ----------------------
         app.get('/portfolio/:email', async (req, res) => {
@@ -171,15 +169,12 @@ async function run() {
             res.send(toolsID)
         })
 
-
         // Post tools in Database MDB , -- verifyJWT added --------------
         app.post('/tools', verifyJWT, verifyAdmin, async (req, res) => {
             const task = req.body;
             const result = await toolsCollection.insertOne(task)
             res.send(result);
         })
-
-
 
         // manage Booking -----------++++
         // Get Data From MDB ---+++++++++++++++++++
@@ -195,7 +190,6 @@ async function run() {
             const manageBooking = await bookingCollection.findOne(query);
             res.send(manageBooking)
         })
-
 
         // payment stripe transactionId send in MDB function ++++++++----------------
         app.patch('/booking/payment/:id', verifyJWT, async (req, res) => {
@@ -213,7 +207,6 @@ async function run() {
             res.send(updateDoc)
         })
 
-
         // Delete tools/product Data From MDB ---+++++++++++++++++++
         app.delete('/booking/manage/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
@@ -221,8 +214,7 @@ async function run() {
             const manageBooking = await bookingCollection.deleteOne(query);
             res.send(manageBooking);
         })
-        // manage Booking ++++-----------
-
+        // manage Booking ++++---------
 
         //  GET booking product from MDB
         app.get('/booking', verifyJWT, async (req, res) => {
@@ -252,7 +244,7 @@ async function run() {
             return res.send({ success: true, myBooking });
         })
 
-        // Normal user Deletenpm run start-dev personal order   ------+++++++++++
+        // Normal user Deletenpm run start-dev personal order ------+++++++++++
         app.delete('/booking/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -261,13 +253,11 @@ async function run() {
         })
         //--------
 
-
         // Review API ---
         app.get('/review', async (req, res) => {
             const review = await reviewCollection.find().toArray();
             res.send(review)
         })
-
 
         app.post('/review', async (req, res) => {
 
@@ -281,9 +271,7 @@ async function run() {
             }
             const myReview = await reviewCollection.insertOne(review)
             return res.send({ success: true, myReview });
-
         })
-
 
         //--------
     } finally { }
