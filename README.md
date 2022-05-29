@@ -1,9 +1,5 @@
 # Construction Tools Manufacturer
 
-<br />
-
-### My Client site Details for Examiner test [(Admin: User/pass) Check Client Repo](https://github.com/programming-hero-web-course1/manufacturer-website-client-side-kibria-khandaker/)
-
 
 <br/> 
 <br/> 
