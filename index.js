@@ -280,11 +280,11 @@ run().catch(console.dir)
 //-------------------------------------------------------------
 
 app.get('/', (req, res) => {
-    res.send('Your -Construction Tools Manufacturer- Server is Running And with all Completed')
+    res.send('Your -CTM- Server is Running, It will auto update from GitHub repository')
 });
 
 app.listen(port, () => {
-    console.log('The -Construction Tools Manufacturer- Server Listening to port', port);
+    console.log('The Your -CTM- Server Listening to port', port);
 })
 
 //------
